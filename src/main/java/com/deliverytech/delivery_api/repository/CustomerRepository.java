@@ -9,10 +9,14 @@ import org.springframework.stereotype.Repository;
 import com.deliverytech.delivery_api.model.Customer;
 
 @Repository
-public interface ClientRepository extends JpaRepository<Customer, Long> {
+public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
   Optional<Customer> findByEmail(String email);
 
+  boolean existsByEmail(String email);
+
   List<Customer> findByActiveTrue();
+
+  List<Customer> findByNameContainingIgnoreCase(String name);
 
 }

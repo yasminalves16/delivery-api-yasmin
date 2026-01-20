@@ -18,10 +18,10 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
   List<CustomerOrder> findByStatus(CustomerOrderStatus status);
 
   @Query("""
-    SELECT co FROM CustomerOrder co
-    WHERE co.restaurant.id = :restaurantId
-  """)
+        SELECT co FROM CustomerOrder co
+        WHERE co.restaurant.id = :restaurantId
+      """)
   List<CustomerOrder> findByDateTime(
-    @Param("start") LocalDateTime start,
-    @Param("end") LocalDateTime end);
+      @Param("start") LocalDateTime start,
+      @Param("end") LocalDateTime end);
 }
