@@ -1,5 +1,7 @@
 package com.deliverytech.delivery_api.model;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -28,7 +30,7 @@ public class Product {
 
   private String imageUrl;
 
-  private Double price;
+  private BigDecimal price;
 
   private Boolean available;
 
