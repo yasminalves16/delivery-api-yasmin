@@ -8,7 +8,7 @@ import com.deliverytech.delivery_api.model.OrderItem;
 
 public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
 
-  List<OrderItem> findByOrderId(Long orderId);
+  List<OrderItem> findByCustomerOrderId(Long customerOrderId);
 
   List<OrderItem> findByProductId(Long productId);
 }
