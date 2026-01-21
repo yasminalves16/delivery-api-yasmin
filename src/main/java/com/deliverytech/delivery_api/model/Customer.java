@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -18,6 +21,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "customers")
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class Customer {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,7 +32,7 @@ public class Customer {
   @Column(unique = true, nullable = false)
   private String email;
 
-  private String phoneNumber;
+  private String phone;
 
   private String address;
 
@@ -38,6 +42,7 @@ public class Customer {
   private Boolean active;
 
   @OneToMany(mappedBy = "customer")
+  @JsonIgnore
   private List<CustomerOrder> orders = new ArrayList<>();
 
 }

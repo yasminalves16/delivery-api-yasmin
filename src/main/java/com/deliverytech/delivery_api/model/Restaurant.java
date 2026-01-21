@@ -30,7 +30,7 @@ public class Restaurant {
 
   private String address;
 
-  private String phoneNumber;
+  private String phone;
 
   private BigDecimal rating;
 
