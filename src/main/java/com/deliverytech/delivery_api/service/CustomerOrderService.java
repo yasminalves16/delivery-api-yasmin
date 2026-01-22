@@ -74,6 +74,10 @@ public class CustomerOrderService {
     return customerOrderRepository.findByCustomerId(customerId);
   }
 
+  public List<CustomerOrder> getAllOrders() {
+    return customerOrderRepository.findAll();
+  }
+
   public OrderItem addOrderItem(Long orderId, Long productId, Integer quantity) {
     CustomerOrder order = customerOrderRepository.findById(orderId)
         .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado"));
@@ -93,5 +97,10 @@ public class CustomerOrderService {
     customerOrderRepository.save(order);
 
     return orderItem;
+  }
+
+  public CustomerOrder getOrderById(Long id) {
+    return customerOrderRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado"));
   }
 }

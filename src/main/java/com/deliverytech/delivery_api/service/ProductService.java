@@ -35,4 +35,13 @@ public class ProductService {
   public List<Product> getProductsByRestaurantId(Long restaurantId) {
     return productRepository.findByRestaurantId(restaurantId);
   }
+
+  public List<Product> getAllAvailableProducts() {
+    return productRepository.findByAvailableTrue();
+  }
+
+  public Product getProductById(Long id) {
+    return productRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado"));
+  }
 }
