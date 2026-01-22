@@ -2,6 +2,8 @@ package com.deliverytech.delivery_api.model;
 
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -32,10 +34,12 @@ public class OrderItem {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "product_id")
+  @JsonIgnore
   private Product product;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "customer_order_id")
+  @JsonIgnore
   private CustomerOrder customerOrder;
 
 }

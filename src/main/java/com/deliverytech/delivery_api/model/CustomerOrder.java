@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.deliverytech.delivery_api.enums.CustomerOrderStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -49,13 +50,16 @@ public class CustomerOrder {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "customer_id")
+  @JsonIgnore
   private Customer customer;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "restaurant_id")
+  @JsonIgnore
   private Restaurant restaurant;
 
   @OneToMany(mappedBy = "customerOrder")
+  @JsonIgnore
   private java.util.List<OrderItem> orderItems;
 
 }
