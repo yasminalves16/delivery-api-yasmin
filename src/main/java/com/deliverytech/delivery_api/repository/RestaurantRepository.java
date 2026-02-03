@@ -20,4 +20,6 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
 
   List<Restaurant> findByActiveTrueAndCategory(String category);
 
+  boolean existsByName(String name);
+
 }
