@@ -3,8 +3,13 @@ package com.deliverytech.delivery_api.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import com.deliverytech.delivery_api.dto.CustomerDTO;
+import com.deliverytech.delivery_api.dto.responses.CustomerResponseDTO;
+import com.deliverytech.delivery_api.exceptions.BusinessException;
+import com.deliverytech.delivery_api.exceptions.EntityNotFoundException;
 import com.deliverytech.delivery_api.model.Customer;
 import com.deliverytech.delivery_api.repository.CustomerRepository;
 
@@ -13,48 +18,69 @@ import jakarta.transaction.Transactional;
 @Service
 @Transactional
 public class CustomerService {
-  private CustomerRepository customerRepository;
+    private CustomerRepository customerRepository;
+    private final ModelMapper mapper;
 
-  public CustomerService(CustomerRepository customerRepository) {
-    this.customerRepository = customerRepository;
-  }
-
-  public Customer registerCustomer(Customer customer) {
-    if (customerRepository.existsByEmail(customer.getEmail())) {
-      throw new IllegalArgumentException("Email já está em uso.");
+    public CustomerService(CustomerRepository customerRepository, ModelMapper mapper) {
+        this.customerRepository = customerRepository;
+        this.mapper = mapper;
     }
-    customer.setActive(true);
-    customer.setCreatedAt(LocalDateTime.now());
-    return customerRepository.save(customer);
-  }
 
-  public List<Customer> getActiveCustomers() {
-    return customerRepository.findByActiveTrue();
-  }
+    public CustomerResponseDTO registerCustomer(CustomerDTO dto) {
+        if (customerRepository.existsByEmail(dto.getEmail())) {
+            throw new BusinessException("Email já está em uso.");
+        }
 
-  public List<Customer> searchCustomersByName(String name) {
-    return customerRepository.findByNameContainingIgnoreCase(name);
-  }
+        Customer customer = mapper.map(dto, Customer.class);
+        customer.setActive(true);
+        customer.setCreatedAt(LocalDateTime.now());
+        Customer savedCustomer = customerRepository.save(customer);
+        return mapper.map(savedCustomer, CustomerResponseDTO.class);
+    }
 
-  public Customer searchCustomerById(Long id) {
-    return customerRepository.findById(id)
-        .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado "));
-  }
+    public List<CustomerResponseDTO> getActiveCustomers() {
+        return customerRepository.findByActiveTrue()
+                .stream()
+                .map(customer -> mapper.map(customer, CustomerResponseDTO.class))
+                .toList();
+    }
 
-  public Customer updateCustomer(Long id, Customer updatedCustomer) {
-    Customer existingCustomer = searchCustomerById(id);
+    public List<CustomerResponseDTO> getAllCustomers() {
+        return customerRepository.findAll()
+                .stream()
+                .map(customer -> mapper.map(customer, CustomerResponseDTO.class))
+                .toList();
+    }
+    
+    public List<CustomerResponseDTO> searchCustomersByName(String name) {
+        return customerRepository.findByNameContainingIgnoreCase(name)
+                .stream()
+                .map(customer -> mapper.map(customer, CustomerResponseDTO.class))
+                .toList();
+    }
 
-    existingCustomer.setName(updatedCustomer.getName());
-    existingCustomer.setEmail(updatedCustomer.getEmail());
-    existingCustomer.setPhone(updatedCustomer.getPhone());
-    existingCustomer.setAddress(updatedCustomer.getAddress());
+    public CustomerResponseDTO searchCustomerById(Long id) {
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado"));
+        return mapper.map(customer, CustomerResponseDTO.class);
+    }
 
-    return customerRepository.save(existingCustomer);
-  }
+    // public Customer updateCustomer(Long id, Customer updatedCustomer) {
+    // Customer existingCustomer = searchCustomerById(id);
 
-  public void deactivateCustomer(Long id) {
-    Customer existingCustomer = searchCustomerById(id);
-    existingCustomer.setActive(false);
-    customerRepository.save(existingCustomer);
-  }
+    // existingCustomer.setName(updatedCustomer.getName());
+    // existingCustomer.setEmail(updatedCustomer.getEmail());
+    // existingCustomer.setPhone(updatedCustomer.getPhone());
+    // existingCustomer.setAddress(updatedCustomer.getAddress());
+
+    // return customerRepository.save(existingCustomer);
+    // }
+
+    @Transactional
+    public CustomerResponseDTO toggleCustomerActive(Long id) {
+        Customer existingCustomer = customerRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado"));
+        existingCustomer.setActive(!existingCustomer.getActive());
+        return mapper.map(existingCustomer, CustomerResponseDTO.class);
+    }
 }
