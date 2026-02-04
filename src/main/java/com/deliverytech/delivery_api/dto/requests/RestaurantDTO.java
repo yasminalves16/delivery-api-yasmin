@@ -1,4 +1,4 @@
-package com.deliverytech.delivery_api.dto;
+package com.deliverytech.delivery_api.dto.requests;
 
 import java.math.BigDecimal;
 

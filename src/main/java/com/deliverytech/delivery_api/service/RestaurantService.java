@@ -6,7 +6,7 @@ import java.util.List;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import com.deliverytech.delivery_api.dto.RestaurantDTO;
+import com.deliverytech.delivery_api.dto.requests.RestaurantDTO;
 import com.deliverytech.delivery_api.dto.responses.RestaurantResponseDTO;
 import com.deliverytech.delivery_api.exceptions.BusinessException;
 import com.deliverytech.delivery_api.exceptions.EntityNotFoundException;

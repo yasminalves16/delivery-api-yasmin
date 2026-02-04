@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.deliverytech.delivery_api.dto.RestaurantDTO;
+import com.deliverytech.delivery_api.dto.requests.RestaurantDTO;
 import com.deliverytech.delivery_api.dto.responses.RestaurantResponseDTO;
 import com.deliverytech.delivery_api.service.RestaurantService;
 
