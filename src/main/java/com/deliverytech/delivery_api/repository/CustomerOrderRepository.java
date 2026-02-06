@@ -13,6 +13,29 @@ import com.deliverytech.delivery_api.model.CustomerOrder;
 
 @Repository
 public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Long> {
+
+  @Query("""
+        SELECT DISTINCT co
+        FROM CustomerOrder co
+        JOIN FETCH co.customer c
+        JOIN FETCH co.restaurant r
+        JOIN FETCH co.orderItems i
+        LEFT JOIN FETCH i.product p
+        WHERE co.customer.id = :customerId
+      """)
+  List<CustomerOrder> findByCustomerIdWithItems(@Param("customerId") Long customerId);
+
+  @Query("""
+        SELECT DISTINCT co
+        FROM CustomerOrder co
+        JOIN FETCH co.customer c
+        JOIN FETCH co.restaurant r
+        LEFT JOIN FETCH co.orderItems i
+        LEFT JOIN FETCH i.product p
+        WHERE co.id = :orderId
+      """)
+  CustomerOrder findByIdWithItems(@Param("orderId") Long orderId);
+
   List<CustomerOrder> findByCustomerId(Long customerId);
 
   List<CustomerOrder> findByStatus(CustomerOrderStatus status);
