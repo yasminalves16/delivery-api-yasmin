@@ -2,17 +2,20 @@ package com.deliverytech.delivery_api.controller;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.deliverytech.delivery_api.enums.CustomerOrderStatus;
-import com.deliverytech.delivery_api.model.CustomerOrder;
+import com.deliverytech.delivery_api.dto.requests.CustomerOrderDTO;
+import com.deliverytech.delivery_api.dto.responses.CustomerOrderResponseDTO;
 import com.deliverytech.delivery_api.service.CustomerOrderService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/customer-orders")
@@ -24,27 +27,38 @@ public class CustomerOrderController {
   }
 
   @PostMapping
-  public CustomerOrder createOrder(@RequestParam Long customerId, @RequestParam Long restaurantId) {
-    return customerOrderService.createOrder(customerId, restaurantId);
+  public ResponseEntity<CustomerOrderResponseDTO> createOrder(@RequestBody @Valid CustomerOrderDTO customerOrderDTO) {
+    return ResponseEntity.ok(customerOrderService.createOrder(customerOrderDTO));
   }
 
-  @PutMapping("/{id}/status")
-  public CustomerOrder updateOrderStatus(@PathVariable Long orderId, @RequestParam CustomerOrderStatus status) {
-    return customerOrderService.updateStatusOrder(orderId, status);
+  @PutMapping("/{orderId}/confirm")
+  public ResponseEntity<CustomerOrderResponseDTO> confirmOrder(@PathVariable Long orderId) {
+    return ResponseEntity.ok(customerOrderService.confirmOrder(orderId));
   }
 
-  @GetMapping("/customer/{id}")
-  public List<CustomerOrder> getOrdersByCustomerId(@PathVariable("id") Long customerId) {
-    return customerOrderService.getOrdersByCustomerId(customerId);
+  @PutMapping("/{orderId}/cancel")
+  public ResponseEntity<CustomerOrderResponseDTO> cancelOrder(@PathVariable Long orderId) {
+    return ResponseEntity.ok(customerOrderService.cancelOrder(orderId));
+  }
+
+  @PutMapping("/{orderId}/status")
+  public ResponseEntity<CustomerOrderResponseDTO> updateOrderStatus(@PathVariable Long orderId) {
+    return ResponseEntity.ok(customerOrderService.updateStatusOrder(orderId));
+  }
+
+  @GetMapping("/customer/{customerId}")
+  public ResponseEntity<List<CustomerOrderResponseDTO>> getOrdersByCustomerId(
+      @PathVariable("customerId") Long customerId) {
+    return ResponseEntity.ok(customerOrderService.getOrdersByCustomerId(customerId));
   }
 
   @GetMapping
-  public List<CustomerOrder> getAllOrders() {
-    return customerOrderService.getAllOrders();
+  public ResponseEntity<List<CustomerOrderResponseDTO>> getAllOrders() {
+    return ResponseEntity.ok(customerOrderService.getAllOrders());
   }
 
-  @GetMapping("/{id}")
-  public CustomerOrder getOrderById(@PathVariable Long id) {
-    return customerOrderService.getOrderById(id);
+  @GetMapping("/{orderId}")
+  public ResponseEntity<CustomerOrderResponseDTO> getOrderById(@PathVariable Long orderId) {
+    return ResponseEntity.ok(customerOrderService.getOrderById(orderId));
   }
 }
