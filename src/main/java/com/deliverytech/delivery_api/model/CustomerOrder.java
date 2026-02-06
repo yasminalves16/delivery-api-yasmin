@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import com.deliverytech.delivery_api.enums.CustomerOrderStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -59,9 +60,9 @@ public class CustomerOrder {
   @JsonIgnore
   private Restaurant restaurant;
 
-  @OneToMany(mappedBy = "customerOrder")
+  @OneToMany(mappedBy = "customerOrder", cascade = CascadeType.ALL, orphanRemoval = true)
   @JsonIgnore
-  private java.util.List<OrderItem> orderItems;
+  private java.util.List<OrderItem> orderItems = new java.util.ArrayList<>();
 
   @PrePersist
   public void PrePersist() {
