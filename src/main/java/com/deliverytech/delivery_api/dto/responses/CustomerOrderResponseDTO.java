@@ -14,8 +14,6 @@ import lombok.Setter;
 public class CustomerOrderResponseDTO {
   private Long id;
 
-  private String orderNumber;
-
   private LocalDateTime dateOrder;
 
   private BigDecimal totalValue;
