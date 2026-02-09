@@ -25,5 +25,4 @@ public class OpenApiConfig {
             .url("http://localhost:8080")
             .description("Servidor local")));
   }
-
 }
