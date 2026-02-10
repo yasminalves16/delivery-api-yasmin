@@ -1,7 +1,6 @@
 package com.deliverytech.delivery_api.exceptions;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,31 +17,48 @@ import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 public class GlobalExceptionHandler {
 
   @ExceptionHandler(EntityNotFoundException.class)
-  public ResponseEntity<String> handleNotFound(EntityNotFoundException ex) {
-    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+  public ResponseEntity<ErrorResponse> handleNotFound(EntityNotFoundException ex) {
+    ErrorResponse error = new ErrorResponse(
+        HttpStatus.NOT_FOUND.value(),
+        ex.getMessage(),
+        System.currentTimeMillis(),
+        null);
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
   }
 
   @ExceptionHandler(BusinessException.class)
-  public ResponseEntity<String> handleBusiness(BusinessException ex) {
-    return ResponseEntity.badRequest().body(ex.getMessage());
+  public ResponseEntity<ErrorResponse> handleBusiness(BusinessException ex) {
+    ErrorResponse error = new ErrorResponse(
+        HttpStatus.CONFLICT.value(),
+        ex.getMessage(),
+        System.currentTimeMillis(),
+        null);
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<Map<String, String>> handleValidationErrors(
+  public ResponseEntity<ErrorResponse> handleValidationErrors(
       MethodArgumentNotValidException ex) {
-
-    Map<String, String> errors = new HashMap<>();
-
-    ex.getBindingResult()
+    List<ErrorResponse.ValidationError> errors = ex.getBindingResult()
         .getFieldErrors()
-        .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
+        .stream()
+        .map(error -> new ErrorResponse.ValidationError(
+            error.getField(),
+            error.getDefaultMessage()))
+        .toList();
 
-    return ResponseEntity.badRequest().body(errors);
+    ErrorResponse response = new ErrorResponse(
+        HttpStatus.BAD_REQUEST.value(),
+        "Erro de validacao nos campos informados.",
+        System.currentTimeMillis(),
+        List.copyOf(errors));
+
+    return ResponseEntity.badRequest().body(response);
   }
 
   @ExceptionHandler(HttpMessageNotReadableException.class)
-  public ResponseEntity<Map<String, String>> handleJsonParseError(HttpMessageNotReadableException ex) {
-    Map<String, String> error = new HashMap<>();
+  public ResponseEntity<ErrorResponse> handleJsonParseError(HttpMessageNotReadableException ex) {
+    String message = "JSON inválido: verifique tipos dos campos.";
 
     Throwable cause = ex.getMostSpecificCause();
     if (cause instanceof InvalidFormatException invalid) {
@@ -50,22 +66,22 @@ public class GlobalExceptionHandler {
           .map(JsonMappingException.Reference::getFieldName)
           .reduce((a, b) -> a + "." + b)
           .orElse("desconhecido");
-      error.put("error", "Campo inválido: " + field + " (tipo esperado: " +
-          invalid.getTargetType().getSimpleName() + ")");
-      return ResponseEntity.badRequest().body(error);
-    }
-
-    if (cause instanceof MismatchedInputException mismatched) {
+      message = "Campo inválido: " + field + " (tipo esperado: " +
+          invalid.getTargetType().getSimpleName() + ")";
+    } else if (cause instanceof MismatchedInputException mismatched) {
       String field = mismatched.getPath().stream()
           .map(JsonMappingException.Reference::getFieldName)
           .reduce((a, b) -> a + "." + b)
           .orElse("desconhecido");
-      error.put("error", "Campo inválido: " + field + " (tipo esperado: " +
-          mismatched.getTargetType().getSimpleName() + ")");
-      return ResponseEntity.badRequest().body(error);
+      message = "Campo inválido: " + field + " (tipo esperado: " +
+          mismatched.getTargetType().getSimpleName() + ")";
     }
 
-    error.put("error", "JSON inválido: verifique tipos dos campos.");
+    ErrorResponse error = new ErrorResponse(
+        HttpStatus.BAD_REQUEST.value(),
+        message,
+        System.currentTimeMillis(),
+        null);
     return ResponseEntity.badRequest().body(error);
   }
 }
