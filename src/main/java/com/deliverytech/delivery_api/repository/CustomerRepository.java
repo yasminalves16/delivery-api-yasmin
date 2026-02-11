@@ -1,8 +1,9 @@
 package com.deliverytech.delivery_api.repository;
 
-import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,8 +16,8 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
   boolean existsByEmail(String email);
 
-  List<Customer> findByActiveTrue();
+  Page<Customer> findByActiveTrue(Pageable pageable);
 
-  List<Customer> findByNameContainingIgnoreCase(String name);
+  Page<Customer> findByNameContainingIgnoreCase(String name, Pageable pageable);
 
 }
