@@ -1,9 +1,10 @@
 package com.deliverytech.delivery_api.service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.deliverytech.delivery_api.dto.requests.CustomerDTO;
@@ -18,69 +19,63 @@ import jakarta.transaction.Transactional;
 @Service
 @Transactional
 public class CustomerService {
-    private CustomerRepository customerRepository;
-    private final ModelMapper mapper;
+  private CustomerRepository customerRepository;
+  private final ModelMapper mapper;
 
-    public CustomerService(CustomerRepository customerRepository, ModelMapper mapper) {
-        this.customerRepository = customerRepository;
-        this.mapper = mapper;
+  public CustomerService(CustomerRepository customerRepository, ModelMapper mapper) {
+    this.customerRepository = customerRepository;
+    this.mapper = mapper;
+  }
+
+  public CustomerResponseDTO registerCustomer(CustomerDTO dto) {
+    if (customerRepository.existsByEmail(dto.getEmail())) {
+      throw new BusinessException("Email já está em uso.");
     }
 
-    public CustomerResponseDTO registerCustomer(CustomerDTO dto) {
-        if (customerRepository.existsByEmail(dto.getEmail())) {
-            throw new BusinessException("Email já está em uso.");
-        }
+    Customer customer = mapper.map(dto, Customer.class);
+    customer.setActive(true);
+    customer.setCreatedAt(LocalDateTime.now());
+    Customer savedCustomer = customerRepository.save(customer);
+    return mapper.map(savedCustomer, CustomerResponseDTO.class);
+  }
 
-        Customer customer = mapper.map(dto, Customer.class);
-        customer.setActive(true);
-        customer.setCreatedAt(LocalDateTime.now());
-        Customer savedCustomer = customerRepository.save(customer);
-        return mapper.map(savedCustomer, CustomerResponseDTO.class);
-    }
+  public Page<CustomerResponseDTO> getActiveCustomers(Pageable pageable) {
+    return customerRepository.findByActiveTrue(pageable)
+        .map(customer -> mapper.map(customer, CustomerResponseDTO.class));
+  }
 
-    public List<CustomerResponseDTO> getActiveCustomers() {
-        return customerRepository.findByActiveTrue()
-                .stream()
-                .map(customer -> mapper.map(customer, CustomerResponseDTO.class))
-                .toList();
-    }
+  public Page<CustomerResponseDTO> getAllCustomers(Pageable pageable) {
+    return customerRepository.findAll(pageable)
+        .map(customer -> mapper.map(customer, CustomerResponseDTO.class));
+  }
 
-    public List<CustomerResponseDTO> getAllCustomers() {
-        return customerRepository.findAll()
-                .stream()
-                .map(customer -> mapper.map(customer, CustomerResponseDTO.class))
-                .toList();
-    }
-    
-    public List<CustomerResponseDTO> searchCustomersByName(String name) {
-        return customerRepository.findByNameContainingIgnoreCase(name)
-                .stream()
-                .map(customer -> mapper.map(customer, CustomerResponseDTO.class))
-                .toList();
-    }
+  public Page<CustomerResponseDTO> searchCustomersByName(String name, Pageable pageable) {
+    return customerRepository.findByNameContainingIgnoreCase(name, pageable)
+        .map(customer -> mapper.map(customer, CustomerResponseDTO.class));
+  }
 
-    public CustomerResponseDTO searchCustomerById(Long id) {
-        Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado"));
-        return mapper.map(customer, CustomerResponseDTO.class);
-    }
+  public CustomerResponseDTO searchCustomerById(Long id) {
+    Customer customer = customerRepository.findById(id)
+        .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado"));
+    return mapper.map(customer, CustomerResponseDTO.class);
+  }
 
-    // public Customer updateCustomer(Long id, Customer updatedCustomer) {
-    // Customer existingCustomer = searchCustomerById(id);
+  // public Customer updateCustomer(Long id, Customer updatedCustomer) {
+  // Customer existingCustomer = searchCustomerById(id);
 
-    // existingCustomer.setName(updatedCustomer.getName());
-    // existingCustomer.setEmail(updatedCustomer.getEmail());
-    // existingCustomer.setPhone(updatedCustomer.getPhone());
-    // existingCustomer.setAddress(updatedCustomer.getAddress());
+  // existingCustomer.setName(updatedCustomer.getName());
+  // existingCustomer.setEmail(updatedCustomer.getEmail());
+  // existingCustomer.setPhone(updatedCustomer.getPhone());
+  // existingCustomer.setAddress(updatedCustomer.getAddress());
 
-    // return customerRepository.save(existingCustomer);
-    // }
+  // return customerRepository.save(existingCustomer);
+  // }
 
-    @Transactional
-    public CustomerResponseDTO toggleCustomerActive(Long id) {
-        Customer existingCustomer = customerRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado"));
-        existingCustomer.setActive(!existingCustomer.getActive());
-        return mapper.map(existingCustomer, CustomerResponseDTO.class);
-    }
+  @Transactional
+  public CustomerResponseDTO toggleCustomerActive(Long id) {
+    Customer existingCustomer = customerRepository.findById(id)
+        .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado"));
+    existingCustomer.setActive(!existingCustomer.getActive());
+    return mapper.map(existingCustomer, CustomerResponseDTO.class);
+  }
 }
