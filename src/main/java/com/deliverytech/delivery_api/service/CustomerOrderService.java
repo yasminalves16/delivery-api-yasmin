@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -151,23 +153,13 @@ public class CustomerOrderService {
     return toResponseDTO(existingOrder);
   }
 
-  public List<CustomerOrderResponseDTO> getOrdersByCustomerId(Long customerId) {
-    return customerOrderRepository.findByCustomerId(customerId)
-        .stream()
-        .map(this::toResponseDTO)
-        .toList();
+  public Page<CustomerOrderResponseDTO> getOrdersByCustomerId(Long customerId, Pageable pageable) {
+    return customerOrderRepository.findByCustomerIdWithItems(customerId, pageable)
+        .map(this::toResponseDTO);
   }
 
   public List<CustomerOrderResponseDTO> getAllOrders() {
     return customerOrderRepository.findAll()
-        .stream()
-        .map(this::toResponseDTO)
-        .toList();
-  }
-
-  @Transactional(readOnly = true)
-  public List<CustomerOrderResponseDTO> findByCustomerIdWithItems(Long customerId) {
-    return customerOrderRepository.findByCustomerIdWithItems(customerId)
         .stream()
         .map(this::toResponseDTO)
         .toList();

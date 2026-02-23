@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.deliverytech.delivery_api.dto.requests.RestaurantDTO;
@@ -41,11 +43,9 @@ public class RestaurantService {
 
   }
 
-  public List<RestaurantResponseDTO> getActiveRestaurants() {
-    return restaurantRepository.findByActiveTrue()
-        .stream()
-        .map(restaurant -> mapper.map(restaurant, RestaurantResponseDTO.class))
-        .toList();
+  public Page<RestaurantResponseDTO> getActiveRestaurants(Pageable pageable) {
+    return restaurantRepository.findByActiveTrue(pageable)
+        .map(restaurant -> mapper.map(restaurant, RestaurantResponseDTO.class));
   }
 
   public List<RestaurantResponseDTO> getAllRestaurants() {

@@ -2,6 +2,8 @@ package com.deliverytech.delivery_api.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.deliverytech.delivery_api.dto.requests.RestaurantDTO;
+import com.deliverytech.delivery_api.dto.responses.PagedResponse;
 import com.deliverytech.delivery_api.dto.responses.RestaurantResponseDTO;
 import com.deliverytech.delivery_api.service.RestaurantService;
 
@@ -35,8 +38,11 @@ public class RestaurantController {
   }
 
   @GetMapping
-  public ResponseEntity<List<RestaurantResponseDTO>> getActiveRestaurants() {
-    return ResponseEntity.ok(restaurantService.getActiveRestaurants());
+  public ResponseEntity<PagedResponse<RestaurantResponseDTO>> getActiveRestaurants(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size) {
+    Pageable pageable = PageRequest.of(page, size);
+    return ResponseEntity.ok(new PagedResponse<>(restaurantService.getActiveRestaurants(pageable)));
   }
 
   @GetMapping("/all")

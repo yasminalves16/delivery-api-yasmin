@@ -2,6 +2,9 @@ package com.deliverytech.delivery_api.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -9,10 +12,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.deliverytech.delivery_api.dto.requests.CustomerOrderDTO;
 import com.deliverytech.delivery_api.dto.responses.CustomerOrderResponseDTO;
+import com.deliverytech.delivery_api.dto.responses.PagedResponse;
 import com.deliverytech.delivery_api.service.CustomerOrderService;
 
 import jakarta.validation.Valid;
@@ -28,7 +33,7 @@ public class CustomerOrderController {
 
   @PostMapping
   public ResponseEntity<CustomerOrderResponseDTO> createOrder(@RequestBody @Valid CustomerOrderDTO customerOrderDTO) {
-    return ResponseEntity.ok(customerOrderService.createOrder(customerOrderDTO));
+    return ResponseEntity.status(HttpStatus.CREATED).body(customerOrderService.createOrder(customerOrderDTO));
   }
 
   @PutMapping("/{orderId}/confirm")
@@ -47,9 +52,12 @@ public class CustomerOrderController {
   }
 
   @GetMapping("/customer/{customerId}")
-  public ResponseEntity<List<CustomerOrderResponseDTO>> getOrdersByCustomerId(
-      @PathVariable("customerId") Long customerId) {
-    return ResponseEntity.ok(customerOrderService.getOrdersByCustomerId(customerId));
+  public ResponseEntity<PagedResponse<CustomerOrderResponseDTO>> getOrdersByCustomerId(
+      @PathVariable("customerId") Long customerId,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size) {
+    Pageable pageable = PageRequest.of(page, size);
+    return ResponseEntity.ok(new PagedResponse<>(customerOrderService.getOrdersByCustomerId(customerId, pageable)));
   }
 
   @GetMapping

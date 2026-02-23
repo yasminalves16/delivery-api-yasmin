@@ -1,6 +1,5 @@
 package com.deliverytech.delivery_api.service;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
@@ -8,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.deliverytech.delivery_api.dto.requests.ProductDTO;
 import com.deliverytech.delivery_api.dto.responses.ProductResponseDTO;
+import com.deliverytech.delivery_api.exceptions.BusinessException;
 import com.deliverytech.delivery_api.exceptions.EntityNotFoundException;
 import com.deliverytech.delivery_api.model.Product;
 import com.deliverytech.delivery_api.model.Restaurant;
@@ -31,15 +31,11 @@ public class ProductService {
 
   @Transactional
   public ProductResponseDTO registerProduct(Long restaurantId, ProductDTO product) {
-    if (product.getPrice() == null || product.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
-      throw new IllegalArgumentException("O preço do produto deve ser maior que zero");
-    }
-
     Restaurant restaurant = restaurantRepository.findById(restaurantId)
-        .orElseThrow(() -> new IllegalArgumentException("Restaurante não encontrado"));
+        .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado"));
 
     if (!restaurant.getActive()) {
-      throw new IllegalArgumentException("Não é possível adicionar produtos a um restaurante inativo");
+      throw new BusinessException("Não é possível adicionar produtos a um restaurante inativo");
     }
 
     Product newProduct = mapper.map(product, Product.class);
@@ -56,7 +52,7 @@ public class ProductService {
   public List<ProductResponseDTO> getProductsByRestaurantId(Long restaurantId) {
     // return productRepository.findByRestaurantId(restaurantId);
     if (!restaurantRepository.existsById(restaurantId)) {
-      throw new IllegalArgumentException("Restaurante não encontrado");
+      throw new EntityNotFoundException("Restaurante não encontrado");
     }
 
     return productRepository.findByRestaurantIdAndAvailableTrue(restaurantId)
