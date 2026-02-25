@@ -24,12 +24,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.deliverytech.delivery_api.dto.requests.CustomerOrderDTO;
 import com.deliverytech.delivery_api.dto.requests.OrderItemDTO;
+import com.deliverytech.delivery_api.enums.Role;
 import com.deliverytech.delivery_api.model.Customer;
 import com.deliverytech.delivery_api.model.Product;
 import com.deliverytech.delivery_api.model.Restaurant;
+import com.deliverytech.delivery_api.model.User;
 import com.deliverytech.delivery_api.repository.CustomerRepository;
 import com.deliverytech.delivery_api.repository.ProductRepository;
 import com.deliverytech.delivery_api.repository.RestaurantRepository;
+import com.deliverytech.delivery_api.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 
@@ -54,6 +57,9 @@ public class CustomerOrderControllerTest {
 	@Autowired
 	private ProductRepository productRepository;
 
+	@Autowired
+	private UserRepository userRepository;
+
 	private Long customerId;
 	private Long restaurantId;
 	private Long productId;
@@ -76,7 +82,20 @@ public class CustomerOrderControllerTest {
 		restaurant.setPhone("11988887777");
 		restaurant.setDeliveryFee(BigDecimal.valueOf(5.0));
 		restaurant.setActive(true);
+
+		User restaurantUser = new User();
+		restaurantUser.setName("Restaurant Test User");
+		restaurantUser.setEmail("rest.order." + System.currentTimeMillis() + "@email.com");
+		restaurantUser.setPassword("12345");
+		restaurantUser.setRole(Role.RESTAURANT);
+		restaurantUser.setActive(true);
+		restaurantUser = userRepository.save(restaurantUser);
+
+		restaurant.setUser(restaurantUser);
 		restaurant = restaurantRepository.save(restaurant);
+		restaurantUser.setRestaurant(restaurant);
+		restaurantUser.setRestaurantId(restaurant.getId());
+		userRepository.save(restaurantUser);
 		restaurantId = restaurant.getId();
 
 		Product product = new Product();

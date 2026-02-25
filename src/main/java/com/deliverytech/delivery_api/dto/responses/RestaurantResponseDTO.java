@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 public class RestaurantResponseDTO {
   private Long id;
-  
+
   private String name;
 
   private String category;
@@ -21,6 +21,12 @@ public class RestaurantResponseDTO {
   private BigDecimal rating;
 
   private BigDecimal deliveryFee;
-  
+
   private Boolean active;
+
+  private Long userId;
+
+  private String userName;
+
+  private String userEmail;
 }

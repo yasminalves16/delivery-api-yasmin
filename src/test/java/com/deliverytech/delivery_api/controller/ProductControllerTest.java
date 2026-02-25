@@ -14,13 +14,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.deliverytech.delivery_api.dto.requests.ProductDTO;
+import com.deliverytech.delivery_api.enums.Role;
 import com.deliverytech.delivery_api.model.Restaurant;
+import com.deliverytech.delivery_api.model.User;
 import com.deliverytech.delivery_api.repository.RestaurantRepository;
+import com.deliverytech.delivery_api.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 
@@ -28,6 +32,7 @@ import com.jayway.jsonpath.JsonPath;
 @AutoConfigureMockMvc(addFilters = false)
 @Transactional
 @ActiveProfiles("test")
+@WithMockUser(username = "rest.product@test.com", roles = { "RESTAURANT" })
 public class ProductControllerTest {
 
   @Autowired
@@ -39,10 +44,21 @@ public class ProductControllerTest {
   @Autowired
   private RestaurantRepository restaurantRepository;
 
+  @Autowired
+  private UserRepository userRepository;
+
   private Long validRestaurantId;
 
   @BeforeEach
   void setUp() {
+    User restaurantUser = new User();
+    restaurantUser.setName("Restaurant Product User");
+    restaurantUser.setEmail("rest.product@test.com");
+    restaurantUser.setPassword("12345");
+    restaurantUser.setRole(Role.RESTAURANT);
+    restaurantUser.setActive(true);
+    restaurantUser = userRepository.save(restaurantUser);
+
     Restaurant restaurant = new Restaurant();
     restaurant.setName("Restaurant Product Test " + System.currentTimeMillis());
     restaurant.setCategory("Variada");
@@ -50,7 +66,13 @@ public class ProductControllerTest {
     restaurant.setPhone("11988887777");
     restaurant.setDeliveryFee(new BigDecimal("7.50"));
     restaurant.setActive(true);
+    restaurant.setUser(restaurantUser);
     restaurant = restaurantRepository.save(restaurant);
+
+    restaurantUser.setRestaurant(restaurant);
+    restaurantUser.setRestaurantId(restaurant.getId());
+    userRepository.save(restaurantUser);
+
     validRestaurantId = restaurant.getId();
   }
 
@@ -83,7 +105,7 @@ public class ProductControllerTest {
     mockMvc.perform(post("/products/restaurant/{restaurantId}", 999999L)
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(dto)))
-        .andExpect(status().isNotFound());
+       .andExpect(status().isConflict());
   }
 
   @Test

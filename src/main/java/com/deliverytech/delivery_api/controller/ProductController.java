@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,6 +29,7 @@ public class ProductController {
   }
 
   @PostMapping("/restaurant/{restaurantId}")
+  @PreAuthorize("hasRole('RESTAURANT') or hasRole('ADMIN')")
   public ResponseEntity<ProductResponseDTO> registerProduct(@PathVariable Long restaurantId,
       @RequestBody @Valid ProductDTO product) {
     ProductResponseDTO response = productService.registerProduct(restaurantId, product);
@@ -54,6 +56,7 @@ public class ProductController {
     return ResponseEntity.ok(productService.getProductById(id));
   }
 
+  @PreAuthorize("hasRole('RESTAURANT') or hasRole('ADMIN')")
   @PatchMapping("/{id}/toggle")
   public ResponseEntity<ProductResponseDTO> toggleProductAvailable(@PathVariable Long id) {
     return ResponseEntity.ok(productService.toggleProductAvailable(id));

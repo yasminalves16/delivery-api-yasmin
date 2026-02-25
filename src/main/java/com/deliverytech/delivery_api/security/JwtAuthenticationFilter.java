@@ -7,6 +7,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 
+import com.deliverytech.delivery_api.model.User;
+import com.deliverytech.delivery_api.repository.UserRepository;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.GenericFilter;
 import jakarta.servlet.ServletException;
@@ -18,9 +21,11 @@ import jakarta.servlet.http.HttpServletRequest;
 public class JwtAuthenticationFilter extends GenericFilter {
 
   private final JwtService jwtService;
+  private final UserRepository userRepository;
 
-  public JwtAuthenticationFilter(JwtService jwtService) {
+  public JwtAuthenticationFilter(JwtService jwtService, UserRepository userRepository) {
     this.jwtService = jwtService;
+    this.userRepository = userRepository;
   }
 
   @Override
@@ -33,23 +38,22 @@ public class JwtAuthenticationFilter extends GenericFilter {
 
     String authHeader = req.getHeader("Authorization");
 
-    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+      chain.doFilter(request, response);
+      return;
+    }
 
-      String token = authHeader.substring(7);
+    String token = authHeader.substring(7);
+    String email = jwtService.extractEmail(token);
 
-      if (jwtService.isTokenValid(token)) {
+    if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+      User user = userRepository.findByEmail(email).orElse(null);
 
-        String email = jwtService.extractEmail(token);
-
-        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-            email, null, null);
-
-        auth.setDetails(
-            new WebAuthenticationDetailsSource()
-                .buildDetails(req));
-
-        SecurityContextHolder.getContext()
-            .setAuthentication(auth);
+      if (user != null && jwtService.isTokenValid(token, email)) {
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user, null,
+            user.getAuthorities());
+        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
       }
     }
 

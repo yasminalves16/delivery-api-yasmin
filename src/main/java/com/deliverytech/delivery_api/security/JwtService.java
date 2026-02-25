@@ -5,6 +5,7 @@ import java.util.Date;
 
 import org.springframework.stereotype.Service;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -28,23 +29,23 @@ public class JwtService {
   }
 
   public String extractEmail(String token) {
+    return extractAllClaims(token).getSubject();
+  }
+
+  public boolean isTokenValid(String token, String email) {
+    String emailToken = extractEmail(token);
+    return emailToken.equals(email) && !isTokenExpired(token);
+  }
+
+  public boolean isTokenExpired(String token) {
+    return extractAllClaims(token).getExpiration().before(new Date());
+  }
+
+  public Claims extractAllClaims(String token) {
     return Jwts.parserBuilder()
         .setSigningKey(getSignKey())
         .build()
         .parseClaimsJws(token)
-        .getBody()
-        .getSubject();
-  }
-
-  public boolean isTokenValid(String token) {
-    try {
-      Jwts.parserBuilder()
-          .setSigningKey(getSignKey())
-          .build()
-          .parseClaimsJws(token);
-      return true;
-    } catch (Exception e) {
-      return false;
-    }
+        .getBody();
   }
 }

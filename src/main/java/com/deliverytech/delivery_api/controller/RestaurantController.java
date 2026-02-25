@@ -6,6 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,6 +33,7 @@ public class RestaurantController {
   }
 
   @PostMapping
+  @PreAuthorize("hasRole('RESTAURANT') or hasRole('ADMIN')")
   public ResponseEntity<RestaurantResponseDTO> registerRestaurant(@RequestBody @Valid RestaurantDTO restaurant) {
     RestaurantResponseDTO responseDTO = restaurantService.registerRestaurant(restaurant);
     return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
@@ -61,6 +63,7 @@ public class RestaurantController {
   }
 
   @PatchMapping("/{id}/toggle")
+  @PreAuthorize("hasRole('RESTAURANT') or hasRole('ADMIN')")
   public RestaurantResponseDTO toggleRestaurantActive(@PathVariable Long id) {
     return restaurantService.toggleRestaurantActive(id);
   }

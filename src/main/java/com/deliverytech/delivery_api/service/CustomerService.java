@@ -13,6 +13,7 @@ import com.deliverytech.delivery_api.exceptions.BusinessException;
 import com.deliverytech.delivery_api.exceptions.EntityNotFoundException;
 import com.deliverytech.delivery_api.model.Customer;
 import com.deliverytech.delivery_api.repository.CustomerRepository;
+import com.deliverytech.delivery_api.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -20,16 +21,18 @@ import jakarta.transaction.Transactional;
 @Transactional
 public class CustomerService {
   private CustomerRepository customerRepository;
+  private UserRepository userRepository;
   private final ModelMapper mapper;
 
-  public CustomerService(CustomerRepository customerRepository, ModelMapper mapper) {
+  public CustomerService(CustomerRepository customerRepository, UserRepository userRepository, ModelMapper mapper) {
     this.customerRepository = customerRepository;
+    this.userRepository = userRepository;
     this.mapper = mapper;
   }
 
   public CustomerResponseDTO registerCustomer(CustomerDTO dto) {
-    if (customerRepository.existsByEmail(dto.getEmail())) {
-      throw new BusinessException("Email já está em uso.");
+    if (customerRepository.existsByEmail(dto.getEmail()) || userRepository.existsByEmail(dto.getEmail())) {
+      throw new BusinessException("Email já está em uso por outro usuário.");
     }
 
     Customer customer = mapper.map(dto, Customer.class);
